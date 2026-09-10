@@ -1,27 +1,47 @@
-# Turbo Trails
+# Turbo Trails 3D
 
-An original, top-down arcade kart racer built for the browser. Six racers, three circuits, three difficulty levels, drift boosts, boost pads, and collectible Boost, Shield, and Pulse items. No external libraries, downloads, accounts, or paid assets. Single-player against five computer racers.
+A lightweight 3D browser kart racer with a perspective chase camera, three tracks, drifting, power-ups and online room-code multiplayer for up to six players. No runtime dependencies or downloaded art. Designed for modest laptops and Chromebooks.
 
 ## Play
 
-Open `index.html` in Chrome, or run `npm start` and visit http://localhost:3000. Use WASD or arrow keys to accelerate, brake, and steer. Hold Shift while turning at speed for at least one second, then release for a drift boost. Press Space to use an item, P or Escape to pause. Touch controls are included. Sound is optional. Best race times are saved on your device when browser storage is available.
+- WASD / arrow keys: drive and brake.
+- Shift while steering: charge a drift, then release for a boost.
+- Space: use Boost, Shield or Pulse.
+- P / Escape: pause solo races. Online races continue if you switch tabs or pause.
+- Touch buttons are available on touch devices.
 
-Stay on the circuit: grass slows your kart, and off-track shortcuts do not earn race progress. Cross the start line after three complete laps to finish. Pulse slows the closest rival ahead within range; Shield protects against collision slowdown for six seconds.
+Select Race Solo to race five computer opponents. For multiplayer, enter a name and choose Create room. Friends open the same website, enter the six-character room code and choose Join. The host starts when everyone is ready; AI fills empty slots. Online races use Normal difficulty and distinct kart colors. Race standings include time penalties and remain provisional until all racers finish (or the ten-minute race limit).
 
-## Deploy on Render
+## Off-track penalties
 
-Create a **Static Site**, connect this repository, and use:
+Grass cuts maximum speed to 60 simulation units (about 42 displayed km/h), removes boost and stops drift charging. Staying off-road for 2.5 seconds or straying more than 110 units from the track center resets the kart to its last valid on-road position with a three-second time penalty. Shortcuts cannot advance the saved checkpoint. The server calculates all online movement, items, checkpoints and penalties; clients only send controls.
+
+## Run locally
+
+Node 18 or newer:
+
+```
+npm start
+```
+
+Open http://localhost:3000. Multiple browser tabs or devices on the same LAN can join the same room using the server's address. Run `npm test` for physics and actual HTTP multiplayer tests. `npm run build` creates a static solo-play build in `dist`.
+
+## Render — multiplayer requires a Web Service
+
+The old Static Site can run solo mode but cannot host multiplayer. Deploy this repository as a **Web Service**, using the Free instance:
 
 | Setting | Value |
 | --- | --- |
-| Branch | `main` |
-| Build command | `npm run build` |
-| Publish directory | `dist` |
+| Branch | main |
+| Runtime | Node |
+| Build command | node build.cjs |
+| Start command | node server.cjs |
+| Health check | /health |
 
-No environment variables are required. `render.yaml` is also included for Blueprint deployment. For a Node Web Service instead, use `npm start`; the server respects Render's `PORT` environment variable.
+No secrets or environment variables are needed. The server honors Render's PORT variable. `render.yaml` defines the same Free web service for Blueprint deployment. Share the new Web Service URL with friends.
 
-## Development
+Free Render services sleep after inactivity and can take about a minute to wake. Rooms are held in memory on a single server instance and expire after two hours; restarts or redeploys clear them. Disconnected racers become AI after 30 seconds; host ownership passes to another connected player. Create a new room to race again. This is casual multiplayer, with server-authoritative controls and HTTP state synchronization; latency depends on the connection. Physical Chromebook performance has not been measured.
 
-Requires Node 18+ for the optional local server, build and tests. Run `npm test` for simulation checks. The game itself only needs a modern browser. Canvas rendering uses a fixed 1200×760 internal resolution to limit work on modest hardware. It has been browser-tested, but performance on a physical Chromebook has not been measured.
+## Implementation
 
-All game art is drawn with Canvas. No Nintendo characters, branding, music, or assets are included.
+`sim.js`: shared track geometry and physics. `game.js`: clipped, depth-sorted world-space 3D polygons, camera and UI. `server.cjs`: room server and static files. No external libraries, paid assets, Nintendo branding, characters or music.
