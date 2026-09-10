@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: turbo-trails
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist
